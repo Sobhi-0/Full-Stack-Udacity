@@ -3,25 +3,33 @@
 #----------------------------------------------------------------------------#
 
 import json
-import dateutil.parser
+import logging
+from logging import FileHandler, Formatter
+
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+import dateutil.parser
+from flask import (Flask, Response, flash, redirect, render_template, request,
+                   url_for)
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
-import logging
-from logging import Formatter, FileHandler
 from flask_wtf import Form
+
 from forms import *
+
 #----------------------------------------------------------------------------#
 # App Config.
 #----------------------------------------------------------------------------#
 
 app = Flask(__name__)
-moment = Moment(app)
 app.config.from_object('config')
-db = SQLAlchemy(app)
 
 # TODO: connect to a local postgresql database
+app.config['SQLALCHEMY_DATABASE_URI'] = \
+    "postgresql://postgres@localhost:5432/fyyur"
+
+moment = Moment(app)
+db = SQLAlchemy(app)
+
 
 #----------------------------------------------------------------------------#
 # Models.
