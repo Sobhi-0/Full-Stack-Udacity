@@ -22,14 +22,10 @@ from forms import *
 
 app = Flask(__name__)
 app.config.from_object('config')
-
-# TODO: connect to a local postgresql database
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    "postgresql://postgres@localhost:5432/fyyur"
-
 moment = Moment(app)
 db = SQLAlchemy(app)
 
+# TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
 # Models.
