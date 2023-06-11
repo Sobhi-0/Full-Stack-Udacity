@@ -30,6 +30,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
+# done in the config.py file
 
 #----------------------------------------------------------------------------#
 # Models.
@@ -49,9 +50,11 @@ class Venue(db.Model):
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     website = db.Column(db.String())
+    # genres are seperated by comma and a space (to use .split(", ") when a list is needed)
     genres = db.Column(db.String())
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
+    venue = db.relationship("Show", backref=db.backref("venue", cascade="all, delete"))
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -61,16 +64,24 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
+    # genres are seperated by comma and a space (to use .split(", ") when a list is needed)
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
+    shows = db.relationship("Show", backref=db.backref("artist", cascade="all, delete"))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     seeking_talent = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+class Show(db.Model):
+    __tablename__ = "show"
 
+    id = db.Column(db.Integer, primary_key=True)
+    venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"))
+    artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
+    start_time = db.Column(db.DateTime, nullable=False)
 
 #----------------------------------------------------------------------------#
 # Filters.
