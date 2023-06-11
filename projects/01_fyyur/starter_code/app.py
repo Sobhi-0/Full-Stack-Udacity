@@ -158,12 +158,12 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
-    venue1 = Venue.query.get(venue_id)
+    venue = Venue.query.get(venue_id)
 
-    # shows is a list of query objects
+    # shows is a list of query objects so it will need iteration to acces each show individually
     shows = Show.query.filter_by(venue_id=venue_id).all()
     
-    # define two lists to add the dictionaries in them based on the whether the event isin the past or future
+    # define two lists to add the dictionaries in them based on the whether the event is in the past or future
     past = []
     upcoming = []
     for show in shows:
@@ -182,18 +182,18 @@ def show_venue(venue_id):
             past.append(temp_dict)
 
     data={
-    "id": venue1.id,
-    "name": venue1.name,
-    "genres": venue1.genres.split(", "),
-    "address": venue1.address,
-    "city": venue1.city,
-    "state": venue1.state,
-    "phone": venue1.phone,
-    "website": venue1.website,
-    "facebook_link": venue1.facebook_link,
-    "seeking_talent": venue1.seeking_talent,
-    "seeking_description": venue1.seeking_description,
-    "image_link": venue1.image_link,
+    "id": venue.id,
+    "name": venue.name,
+    "genres": venue.genres.split(", "),
+    "address": venue.address,
+    "city": venue.city,
+    "state": venue.state,
+    "phone": venue.phone,
+    "website": venue.website,
+    "facebook_link": venue.facebook_link,
+    "seeking_talent": venue.seeking_talent,
+    "seeking_description": venue.seeking_description,
+    "image_link": venue.image_link,
     "past_shows": past,
     "upcoming_shows": upcoming,
     "past_shows_count": len(past),
@@ -269,6 +269,27 @@ def show_artist(artist_id):
     # TODO: replace with real artist data from the artist table, using artist_id
     artist = Artist.query.get(artist_id)
 
+    # shows is a list of query objects so it will need iteration to acces each show individually
+    shows = Show.query.filter_by(artist_id=artist_id).all()
+    
+    # define two lists to add the dictionaries in them based on the whether the event is in the past or future
+    past = []
+    upcoming = []
+    for show in shows:
+        # to access fields in the Venue Model
+        venue = show.artist
+        temp_dict = {}
+        temp_dict["venue_id"] = show.venue_id
+        temp_dict["venue_name"] = venue.name
+        temp_dict["venue_image_link"] = venue.image_link
+        # convert it to string because parsal needs it to be string not datetime
+        temp_dict["start_time"] = str(show.start_time)
+
+        if show.start_time > datetime.now():
+            upcoming.append(temp_dict)
+        else:
+            past.append(temp_dict)
+
     data={
     "id": artist.id,
     "name": artist.name,
@@ -281,15 +302,10 @@ def show_artist(artist_id):
     "seeking_venue": artist.seeking_venue,
     "seeking_description": artist.seeking_description,
     "image_link": artist.image_link,
-    "past_shows": [{
-        "venue_id": 1,
-        "venue_name": "The Musical Hop",
-        "venue_image_link": "https://images.unsplash.com/photo-1543900694-133f37abaaa5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=400&q=60",
-        "start_time": "2019-05-21T21:30:00.000Z"
-    }],
-    "upcoming_shows": [],
-    "past_shows_count": 1,
-    "upcoming_shows_count": 0,
+    "past_shows": past,
+    "upcoming_shows": upcoming,
+    "past_shows_count": len(past),
+    "upcoming_shows_count": len(upcoming),
     }
     
     # data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
