@@ -6,6 +6,8 @@ import json
 import logging
 from logging import FileHandler, Formatter
 
+from datetime import datetime
+
 import babel
 import dateutil.parser
 from flask import (Flask, Response, flash, redirect, render_template, request,
@@ -68,12 +70,12 @@ class Artist(db.Model):
     genres = db.Column(db.String(120))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
-    shows = db.relationship("Show", backref=db.backref("artist", cascade="all, delete"))
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     website = db.Column(db.String())
     seeking_venue = db.Column(db.Boolean, default=False)
     seeking_description = db.Column(db.String())
+    shows = db.relationship("Show", backref=db.backref("artist", cascade="all, delete"))
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
@@ -156,30 +158,46 @@ def search_venues():
 def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
-    venue = Venue.query.get(venue_id)
+    venue1 = Venue.query.get(venue_id)
+
+    # shows is a list of query objects
+    shows = Show.query.filter_by(venue_id=venue_id).all()
+    
+    # define two lists to add the dictionaries in them based on the whether the event isin the past or future
+    past = []
+    upcoming = []
+    for show in shows:
+        # to access fields in the Artist Model
+        artist = show.artist
+        temp_dict = {}
+        temp_dict["artist_id"] = show.artist_id
+        temp_dict["artist_name"] = artist.name
+        temp_dict["artist_image_link"] = artist.image_link
+        # convert it to string because parsal needs it to be string not datetime
+        temp_dict["start_time"] = str(show.start_time)
+
+        if show.start_time > datetime.now():
+            upcoming.append(temp_dict)
+        else:
+            past.append(temp_dict)
 
     data={
-    "id": venue.id,
-    "name": venue.name,
-    "genres": venue.genres.split(", "),
-    "address": venue.address,
-    "city": venue.city,
-    "state": venue.state,
-    "phone": venue.phone,
-    "website": venue.website,
-    "facebook_link": venue.facebook_link,
-    "seeking_talent": venue.seeking_talent,
-    "seeking_description": venue.seeking_description,
-    "image_link": venue.image_link,
-    "past_shows": [{
-        "artist_id": 4,
-        "artist_name": "Guns N Petals",
-        "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-        "start_time": "2019-05-21T21:30:00.000Z"
-    }],
-    "upcoming_shows": [],
-    "past_shows_count": 1,
-    "upcoming_shows_count": 0,
+    "id": venue1.id,
+    "name": venue1.name,
+    "genres": venue1.genres.split(", "),
+    "address": venue1.address,
+    "city": venue1.city,
+    "state": venue1.state,
+    "phone": venue1.phone,
+    "website": venue1.website,
+    "facebook_link": venue1.facebook_link,
+    "seeking_talent": venue1.seeking_talent,
+    "seeking_description": venue1.seeking_description,
+    "image_link": venue1.image_link,
+    "past_shows": past,
+    "upcoming_shows": upcoming,
+    "past_shows_count": len(past),
+    "upcoming_shows_count": len(upcoming),
     }
     
     return render_template('pages/show_venue.html', venue=data)
