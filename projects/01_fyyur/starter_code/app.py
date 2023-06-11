@@ -12,6 +12,8 @@ from flask import (Flask, Response, flash, redirect, render_template, request,
                    url_for)
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
+
 from flask_wtf import Form
 
 from forms import *
@@ -24,6 +26,8 @@ app = Flask(__name__)
 app.config.from_object('config')
 moment = Moment(app)
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
 
 # TODO: connect to a local postgresql database
 
@@ -60,6 +64,7 @@ class Artist(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
 
 #----------------------------------------------------------------------------#
 # Filters.
