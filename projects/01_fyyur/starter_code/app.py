@@ -6,6 +6,7 @@ import json
 import logging
 from logging import FileHandler, Formatter
 
+# needed to decide what are the past/upcoming shows
 from datetime import datetime
 
 import babel
@@ -204,15 +205,31 @@ def search_venues():
     # TODO: implement search on venues with partial string search. Ensure it is case-insensitive.
     # seach for Hop should return "The Musical Hop".
     # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+
+    # get what the user searched for
+    search_term = request.form.get('search_term', '')
+    venues = Venue.query.all()
+    
+    # change to lowe case to make it "case-insensitive"
+    search = search_term.lower()
+    data = []
+
+    for venue in venues:
+        if search in venue.name.lower():
+            temp_dict = {}
+
+            temp_dict["id"] = venue.id
+            temp_dict["name"] = venue.name
+            temp_dict["num_upcoming_shows"] = len(Show.venue_shows(venue.id, "upcoming"))
+        
+            data.append(temp_dict)
+
     response={
-    "count": 1,
-    "data": [{
-        "id": 2,
-        "name": "The Dueling Pianos Bar",
-        "num_upcoming_shows": 0,
-    }]
+    "count": len(data),
+    "data": data
     }
-    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+    
+    return render_template('pages/search_venues.html', results=response, search_term=search_term)
 
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
@@ -425,7 +442,7 @@ def shows():
         temp_dict = {}
         venue = show.venue
         artist = show.artist
-        
+
         temp_dict["venue_id"] = show.venue_id
         temp_dict["venue_name"] = venue.name
         temp_dict["artist_id"] = show.artist_id
