@@ -86,6 +86,34 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
     start_time = db.Column(db.DateTime, nullable=False)
 
+    @staticmethod
+    def venue_shows(venue_id, period):
+         # shows is a list of query objects so it will need iteration to acces each show individually
+        shows = Show.query.filter_by(venue_id=venue_id).all()
+        
+        # define two lists to add the dictionaries in them based on the whether the event is in the past or future
+        past = []
+        upcoming = []
+        for show in shows:
+            # to access fields in the Artist Model
+            artist = show.artist
+            temp_dict = {}
+            temp_dict["artist_id"] = show.artist_id
+            temp_dict["artist_name"] = artist.name
+            temp_dict["artist_image_link"] = artist.image_link
+            # convert it to string because parsal needs it to be string not datetime
+            temp_dict["start_time"] = str(show.start_time)
+
+            if show.start_time > datetime.now():
+                upcoming.append(temp_dict)
+            else:
+                past.append(temp_dict)
+
+        if period == "upcoming":
+            return upcoming
+        elif period == "past":
+            return past
+
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -116,27 +144,49 @@ def index():
 def venues():
     # TODO: replace with real venues data.
     #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-    data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-        "id": 1,
-        "name": "The Musical Hop",
-        "num_upcoming_shows": 0,
-    }, {
-        "id": 3,
-        "name": "Park Square Live Music & Coffee",
-        "num_upcoming_shows": 1,
-    }]
-    }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-        "id": 2,
-        "name": "The Dueling Pianos Bar",
-        "num_upcoming_shows": 0,
-    }]
-    }]
+    venues = Venue.query.order_by(Venue.state).all()
+
+
+    data = []
+    for venue in venues:
+        city_dict = {}
+        city_dict["city"] = venue.city
+        city_dict["state"] = venue.state
+        city_dict["venues"] = []
+        if city_dict not in data:
+            data.append(city_dict)
+
+    for i in data:    
+        for venue in venues:
+            venue_dict = {}
+            if i["city"] == venue.city and i["state"] == venue.state:
+                venue_dict["id"] = venue.id
+                venue_dict["name"] = venue.name
+                venue_dict["num_upcoming_shows"] = len(Show.venue_shows(venue.id, "upcoming"))
+                i["venues"].append(venue_dict)
+
+
+    # data=[{
+    # "city": "San Francisco",
+    # "state": "CA",
+    # "venues": [{
+    #     "id": 1,
+    #     "name": "The Musical Hop",
+    #     "num_upcoming_shows": 0,
+    # }, {
+    #     "id": 3,
+    #     "name": "Park Square Live Music & Coffee",
+    #     "num_upcoming_shows": 1,
+    # }]
+    # }, {
+    # "city": "New York",
+    # "state": "NY",
+    # "venues": [{
+    #     "id": 2,
+    #     "name": "The Dueling Pianos Bar",
+    #     "num_upcoming_shows": 0,
+    # }]
+    # }]
     return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -244,7 +294,7 @@ def artists():
         temp_dict["id"] = artist.id
         temp_dict["name"] = artist.name
         data.append(temp_dict)
-        
+
     return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
