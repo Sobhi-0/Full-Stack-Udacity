@@ -86,6 +86,7 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey("Artist.id"))
     start_time = db.Column(db.DateTime, nullable=False)
 
+    # this method is to return a list of upcoming/past shows
     @staticmethod
     def venue_shows(venue_id, period):
          # shows is a list of query objects so it will need iteration to acces each show individually
@@ -109,6 +110,36 @@ class Show(db.Model):
             else:
                 past.append(temp_dict)
 
+        # return depends on what is neede
+        if period == "upcoming":
+            return upcoming
+        elif period == "past":
+            return past
+
+    @staticmethod
+    def artist_shows(artist_id, period):
+        # shows is a list of query objects so it will need iteration to acces each show individually
+        shows = Show.query.filter_by(artist_id=artist_id).all()
+        
+        # define two lists to add the dictionaries in them based on the whether the event is in the past or future
+        past = []
+        upcoming = []
+        for show in shows:
+            # to access fields in the Venue Model
+            venue = show.artist
+            temp_dict = {}
+            temp_dict["venue_id"] = show.venue_id
+            temp_dict["venue_name"] = venue.name
+            temp_dict["venue_image_link"] = venue.image_link
+            # convert it to string because parsal needs it to be string not datetime
+            temp_dict["start_time"] = str(show.start_time)
+
+            if show.start_time > datetime.now():
+                upcoming.append(temp_dict)
+            else:
+                past.append(temp_dict)
+
+        # return depends on what is neede
         if period == "upcoming":
             return upcoming
         elif period == "past":
@@ -146,7 +177,7 @@ def venues():
     #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
     venues = Venue.query.order_by(Venue.state).all()
 
-
+    # prepare the list of dictionaries each dict has three values the third one is a list of dicts
     data = []
     for venue in venues:
         city_dict = {}
@@ -156,6 +187,7 @@ def venues():
         if city_dict not in data:
             data.append(city_dict)
 
+    # fills the inner list of dictionaries (i refers to the list)
     for i in data:    
         for venue in venues:
             venue_dict = {}
@@ -165,28 +197,6 @@ def venues():
                 venue_dict["num_upcoming_shows"] = len(Show.venue_shows(venue.id, "upcoming"))
                 i["venues"].append(venue_dict)
 
-
-    # data=[{
-    # "city": "San Francisco",
-    # "state": "CA",
-    # "venues": [{
-    #     "id": 1,
-    #     "name": "The Musical Hop",
-    #     "num_upcoming_shows": 0,
-    # }, {
-    #     "id": 3,
-    #     "name": "Park Square Live Music & Coffee",
-    #     "num_upcoming_shows": 1,
-    # }]
-    # }, {
-    # "city": "New York",
-    # "state": "NY",
-    # "venues": [{
-    #     "id": 2,
-    #     "name": "The Dueling Pianos Bar",
-    #     "num_upcoming_shows": 0,
-    # }]
-    # }]
     return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -209,27 +219,11 @@ def show_venue(venue_id):
     # shows the venue page with the given venue_id
     # TODO: replace with real venue data from the venues table, using venue_id
     venue = Venue.query.get(venue_id)
-
-    # shows is a list of query objects so it will need iteration to acces each show individually
-    shows = Show.query.filter_by(venue_id=venue_id).all()
     
     # define two lists to add the dictionaries in them based on the whether the event is in the past or future
-    past = []
-    upcoming = []
-    for show in shows:
-        # to access fields in the Artist Model
-        artist = show.artist
-        temp_dict = {}
-        temp_dict["artist_id"] = show.artist_id
-        temp_dict["artist_name"] = artist.name
-        temp_dict["artist_image_link"] = artist.image_link
-        # convert it to string because parsal needs it to be string not datetime
-        temp_dict["start_time"] = str(show.start_time)
-
-        if show.start_time > datetime.now():
-            upcoming.append(temp_dict)
-        else:
-            past.append(temp_dict)
+    # this is done in the method defined in Show model
+    past = Show.venue_shows(venue_id, "past")
+    upcoming = Show.venue_shows(venue_id, "upcoming")
 
     data={
     "id": venue.id,
@@ -318,26 +312,8 @@ def show_artist(artist_id):
     # TODO: replace with real artist data from the artist table, using artist_id
     artist = Artist.query.get(artist_id)
 
-    # shows is a list of query objects so it will need iteration to acces each show individually
-    shows = Show.query.filter_by(artist_id=artist_id).all()
-    
-    # define two lists to add the dictionaries in them based on the whether the event is in the past or future
-    past = []
-    upcoming = []
-    for show in shows:
-        # to access fields in the Venue Model
-        venue = show.artist
-        temp_dict = {}
-        temp_dict["venue_id"] = show.venue_id
-        temp_dict["venue_name"] = venue.name
-        temp_dict["venue_image_link"] = venue.image_link
-        # convert it to string because parsal needs it to be string not datetime
-        temp_dict["start_time"] = str(show.start_time)
-
-        if show.start_time > datetime.now():
-            upcoming.append(temp_dict)
-        else:
-            past.append(temp_dict)
+    past = Show.artist_shows(artist_id, "past")
+    upcoming = Show.artist_shows(artist_id, "upcoming")
 
     data={
     "id": artist.id,
