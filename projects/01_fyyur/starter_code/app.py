@@ -491,10 +491,65 @@ def create_artist_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
 
-    # on successful db insert, flash success
-    flash('Artist ' + request.form['name'] + ' was successfully listed!')
-    # TODO: on unsuccessful db insert, flash an error instead.
-    # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+
+    form = ArtistForm(request.form)
+
+    print(request.form)
+    # list of all existing names to make sure there will not be any duplicated artists
+    names = db.session.query(Artist.name).all()
+    names = [artist[0] for artist in names]
+
+    # this is to change seeking_venue from a string to boolen so it can be passed as a valid argument for the Venue object
+    try:
+        if request.form["seeking_venue"] == "y":
+            seeking = True
+    except:
+        seeking = False
+
+    try:
+        # to make sure no duplicate venues are added
+        if request.form["name"].strip() in names:
+            flash("Artist already exists")
+            raise NameError
+
+        # makes sure it passes all the validations
+        if form.validate():
+            artist = Artist(
+                # .strip() to make sure spaces at the beginning and at the ending of the string are ignored
+                name = request.form["name"].strip(),
+                city = request.form["city"].strip(),
+                state = request.form["state"],
+                phone = request.form["phone"].strip(),
+                facebook_link = request.form["facebook_link"].strip(),
+                image_link = request.form["image_link"].strip(),
+                website = request.form["website_link"].strip(),
+                seeking_venue = seeking,
+                seeking_description = request.form["seeking_description"].strip(),
+                # .join() used to keep up with the assumption in the Model (string seperated by comma and a space to be converted to a list later)
+                genres =  ', '.join(request.form.getlist("genres"))
+            )
+        with app.app_context():
+            db.session.add(artist)
+            db.session.commit()
+        # on successful db insert, flash success
+        flash('Artist ' + request.form['name'] + ' was successfully listed!')
+    except:
+        with app.app_context():
+            db.session.rollback()
+        # prints the error
+        print(sys.exc_info())
+        # so it shows exactly what the user miss-entered in the create form (if there is any)
+        for field, errors in form.errors.items():
+            for error in errors:
+                flash(f'Error in field "{field}": {error}')
+
+        # TODO: on unsuccessful db insert, flash an error instead.
+        # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+        flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+    finally:
+        with app.app_context():
+            db.session.close()
+
     return render_template('pages/home.html')
 
 
