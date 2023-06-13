@@ -13,7 +13,7 @@ import sys
 import babel
 import dateutil.parser
 from flask import (Flask, Response, flash, redirect, render_template, request,
-                   url_for)
+                   url_for, jsonify)
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -338,14 +338,26 @@ def create_venue_submission():
 
     return render_template('pages/home.html')
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['DELETE'])
 def delete_venue(venue_id):
     # TODO: Complete this endpoint for taking a venue_id, and using
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
+    try:
+        with app.app_context():
+            venue = Venue.query.get(venue_id)
+            db.session.delete(venue)
+            db.session.commit()
+    except:
+        with app.app_context():
+            db.session.rollback()
+    finally:
+        with app.app_context():
+            db.session.close()
+            
+    return jsonify({ 'success': True })
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
     # clicking that button delete it from the db then redirect the user to the homepage
-    return None
+    # done see the show_venue.html the return happens there
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -491,10 +503,8 @@ def create_artist_submission():
     # TODO: insert form data as a new Venue record in the db, instead
     # TODO: modify data to be the data object returned from db insertion
 
-
     form = ArtistForm(request.form)
 
-    print(request.form)
     # list of all existing names to make sure there will not be any duplicated artists
     names = db.session.query(Artist.name).all()
     names = [artist[0] for artist in names]

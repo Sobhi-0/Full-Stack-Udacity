@@ -1,6 +1,18 @@
 {% extends 'layouts/main.html' %}
 {% block title %}Venue Search{% endblock %}
 {% block content %}
+
+<style>
+	.delete
+	{
+		background-color: red;
+		font-size: large;
+		color: white;
+		height: 45px;
+		border-radius: 5px;
+	}
+</style>
+
 <div class="row">
 	<div class="col-sm-6">
 		<h1 class="monospace">
@@ -76,6 +88,29 @@
 </section>
 
 <a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+<button id="delete" class="btn delete">Delete</button>
+
+
+<script>
+	document.getElementById("delete").onclick = function(e)
+	{
+		e.preventDefault();
+		fetch("/venues/{{ venue.id }}/delete",
+		{
+			method: "DELETE"
+		})
+		.then(function(r)
+		{
+			console.log("Venue deleted successfully");
+			window.location.href = "/";
+		})
+		.catch(error =>
+		{
+			console.error("An error occurred:", error);
+		})
+	}
+</script>
+
 
 {% endblock %}
 
