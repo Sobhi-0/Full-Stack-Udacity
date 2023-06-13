@@ -83,6 +83,7 @@ class VenueForm(Form):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
+        # this regex makes the phone number match to this pattern "###-###-####"
         'phone', validators=[Optional(), Regexp(r'^[0-9]{3}-[0-9]{3}-[0-9]{4}$')]
     )
     image_link = StringField(
@@ -115,9 +116,11 @@ class VenueForm(Form):
         ]
     )
     facebook_link = StringField(
+        # adding Optional() beacuse it is not required and without it, user won't be able to create an artist without facebook link
         'facebook_link', validators=[Optional(), URL()]
     )
     website_link = StringField(
+        # making sure it is a valid URL
         'website_link', validators=[Optional(), URL()]
     )
 
@@ -194,6 +197,7 @@ class ArtistForm(Form):
     )
     phone = StringField(
         # TODO implement validation logic for phone 
+        # this regex makes the phone number match to this pattern "###-###-####"
         'phone', validators=[Optional(), Regexp(r'^[0-9]{3}-[0-9]{3}-[0-9]{4}$')]
     )
     image_link = StringField(
@@ -225,10 +229,12 @@ class ArtistForm(Form):
      )
     facebook_link = StringField(
         # TODO implement enum restriction
+        # adding Optional() beacuse it is not required and without it, user won't be able to create an artist without facebook link
         'facebook_link', validators=[Optional(), URL()]
      )
 
     website_link = StringField(
+        # making sure it is a valid URL
         'website_link', validators=[Optional(), URL()]
      )
 
@@ -237,4 +243,3 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
-

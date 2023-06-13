@@ -278,9 +278,12 @@ def create_venue_submission():
     # TODO: modify data to be the data object returned from db insertion
 
     form = VenueForm(request.form)
-    
-    # print("here ==>", form.errors.items())
 
+    # list of all existing names to make sure there will not be any duplicated venues
+    names = db.session.query(Venue.name).all()
+    names = [venue[0] for venue in names]
+
+    # this is to change seeking_talent from a string to boolen so it can be passed as a valid argument for the Venue object
     try:
         if request.form["seeking_talent"] == "y":
             seeking = True
@@ -288,18 +291,26 @@ def create_venue_submission():
         seeking = False
 
     try:
+        # to make sure no duplicate venues are added
+        if request.form["name"].strip() in names:
+            flash("Venue already exists")
+            raise NameError
+
+        # makes sure it passes all the validations
         if form.validate():
             venue = Venue(
-                name = request.form["name"],
-                city = request.form["city"],
+                # .strip() to make sure spaces at the beginning and at the ending of the string are ignored
+                name = request.form["name"].strip(),
+                city = request.form["city"].strip(),
                 state = request.form["state"],
-                address = request.form["address"],
-                phone = request.form["phone"],
-                facebook_link = request.form["facebook_link"],
-                image_link = request.form["image_link"],
-                website = request.form["website_link"],
+                address = request.form["address"].strip(),
+                phone = request.form["phone"].strip(),
+                facebook_link = request.form["facebook_link"].strip(),
+                image_link = request.form["image_link"].strip(),
+                website = request.form["website_link"].strip(),
                 seeking_talent = seeking,
-                seeking_description = request.form["seeking_description"],
+                seeking_description = request.form["seeking_description"].strip(),
+                # .join() used to keep up with the assumption in the Model (string seperated by comma and a space to be converted to a list later)
                 genres =  ', '.join(request.form.getlist("genres"))
             )
         with app.app_context():
@@ -307,14 +318,16 @@ def create_venue_submission():
             db.session.commit()
         # on successful db insert, flash success
         flash('Venue ' + request.form['name'] + ' was successfully listed!')
-    except Exception as e:
-        print(e)
-        print(sys.exc_info())
+    except:
         with app.app_context():
             db.session.rollback()
+        # prints the error
+        print(sys.exc_info())
+        # so it shows exactly what the user miss-entered in the create form (if there is any)
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f'Error in field "{field}": {error}')
+
         # TODO: on unsuccessful db insert, flash an error instead.
         # e.g., flash('An error occurred. Venue ' + data.name + ' could not be listed.')
         # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
