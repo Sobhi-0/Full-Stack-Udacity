@@ -357,7 +357,7 @@ def delete_venue(venue_id):
     return jsonify({ 'success': True })
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
     # clicking that button delete it from the db then redirect the user to the homepage
-    # done see the show_venue.html the return happens there
+    # done see the show_venue.html (to  see the delete button) the return happens there
 
 #  Artists
 #  ----------------------------------------------------------------

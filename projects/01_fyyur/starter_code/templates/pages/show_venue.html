@@ -11,6 +11,12 @@
 		height: 45px;
 		border-radius: 5px;
 	}
+	.wrapper
+	{
+		display: inline-block;
+		vertical-align: middle;
+		padding-right: 10px;
+	}
 </style>
 
 <div class="row">
@@ -87,8 +93,13 @@
 	</div>
 </section>
 
-<a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
-<button id="delete" class="btn delete">Delete</button>
+<div class="wrapper">
+	<a href="/venues/{{ venue.id }}/edit"><button class="btn btn-primary btn-lg">Edit</button></a>
+</div>
+
+<div class="wrapper">
+	<button id="delete" class="btn delete">Delete</button>
+</div>
 
 
 <script>
