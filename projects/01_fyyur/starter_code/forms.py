@@ -2,13 +2,23 @@ from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp
+from app import app, db, Venue, Artist
 
 class ShowForm(Form):
+
+    with app.app_context():
+        # to make sure user enters an existing Id for venue/artist
+        venue_ids = db.session.query(Venue.id).all()
+        artist_ids = db.session.query(Artist.id).all()
+        # to get the ids only
+        venue_ids = [str(venue[0]) for venue in venue_ids]
+        artist_ids = [str(artist[0]) for artist in artist_ids]
+
     artist_id = StringField(
-        'artist_id'
+        'artist_id', validators=[AnyOf(artist_ids)]
     )
     venue_id = StringField(
-        'venue_id'
+        'venue_id', validators=[AnyOf(venue_ids)]
     )
     start_time = DateTimeField(
         'start_time',
