@@ -1,24 +1,38 @@
 from datetime import datetime
 from flask_wtf import Form
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
+from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp
 from app import app, db, Venue, Artist
 
-class ShowForm(Form):
 
+def validate_artist_id(form, field):
+    with app.app_context():
+        # to make sure user enters an existing Id for venue/artist
+        artist_ids = db.session.query(Artist.id).all()
+        # to get the ids only
+        artist_ids = [str(artist[0]) for artist in artist_ids]
+        
+    if field.data not in artist_ids:
+        raise ValidationError("Please enter the Id of an existing artist")
+
+def validate_venue_id(form, field):
     with app.app_context():
         # to make sure user enters an existing Id for venue/artist
         venue_ids = db.session.query(Venue.id).all()
-        artist_ids = db.session.query(Artist.id).all()
         # to get the ids only
         venue_ids = [str(venue[0]) for venue in venue_ids]
-        artist_ids = [str(artist[0]) for artist in artist_ids]
 
+    if field.data not in venue_ids:
+        raise ValidationError("Please enter the Id of an existing venue")
+
+
+
+class ShowForm(Form):
     artist_id = StringField(
-        'artist_id', validators=[AnyOf(artist_ids)]
+        'artist_id', validators=[validate_artist_id]
     )
     venue_id = StringField(
-        'venue_id', validators=[AnyOf(venue_ids)]
+        'venue_id', validators=[validate_venue_id]
     )
     start_time = DateTimeField(
         'start_time',

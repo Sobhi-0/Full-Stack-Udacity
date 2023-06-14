@@ -115,9 +115,9 @@
 			console.log("Venue deleted successfully");
 			window.location.href = "/";
 		})
-		.catch(error =>
+		.catch(function()
 		{
-			console.error("An error occurred:", error);
+			console.log("An error occurred");
 		})
 	}
 </script>

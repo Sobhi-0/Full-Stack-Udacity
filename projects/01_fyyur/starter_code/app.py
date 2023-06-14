@@ -335,22 +335,30 @@ def create_venue_submission():
 def delete_venue(venue_id):
     # TODO: Complete this endpoint for taking a venue_id, and using
     # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
+    error = False
     try:
         with app.app_context():
             venue = Venue.query.get(venue_id)
-            name = venue.name
+            print("here ==>", venue)
+            print("here ==>", venue.name)
+            temp = venue.name[::]
             db.session.delete(venue)
             db.session.commit()
-            flash(f'Venue {name} was deleted successfully')
-    except:
+            flash(f'Venue {temp} was deleted successfully')
+    except Exception as e:
+        error = True
+        print(e)
         with app.app_context():
             db.session.rollback()
-            flash(f'Venue {name} was not deleted')
+            flash(f'Venue {temp} was not deleted')
     finally:
         with app.app_context():
             db.session.close()
-            
-    return jsonify({ 'success': True })
+    if not error:
+        return jsonify({ 'success': True })
+    else:
+        return jsonify({ 'success': False })
+
     # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
     # clicking that button delete it from the db then redirect the user to the homepage
     # done see the show_venue.html (to  see the delete button) the return happens there
@@ -565,16 +573,17 @@ def shows():
     for show in shows:
         temp_dict = {}
         venue = show.venue
-        artist = show.artist
+        if venue:
+            artist = show.artist
 
-        temp_dict["venue_id"] = show.venue_id
-        temp_dict["venue_name"] = venue.name
-        temp_dict["artist_id"] = show.artist_id
-        temp_dict["artist_name"] = artist.name
-        temp_dict["artist_image_link"] = artist.image_link
-        temp_dict["start_time"] = str(show.start_time)
-        
-        data.append(temp_dict)
+            temp_dict["venue_id"] = show.venue_id
+            temp_dict["venue_name"] = venue.name
+            temp_dict["artist_id"] = show.artist_id
+            temp_dict["artist_name"] = artist.name
+            temp_dict["artist_image_link"] = artist.image_link
+            temp_dict["start_time"] = str(show.start_time)
+            
+            data.append(temp_dict)
 
     return render_template('pages/shows.html', shows=data)
 
