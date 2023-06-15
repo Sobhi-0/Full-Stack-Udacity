@@ -8,7 +8,6 @@ from logging import FileHandler, Formatter
 
 # needed to decide what are the past/upcoming shows
 from datetime import datetime
-import sys
 
 import babel
 import dateutil.parser
@@ -81,7 +80,7 @@ class Artist(db.Model):
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
 class Show(db.Model):
-    __tablename__ = "show"
+    __tablename__ = "show_table"
 
     id = db.Column(db.Integer, primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey("Venue.id"))
@@ -129,17 +128,18 @@ class Show(db.Model):
         for show in shows:
             # to access fields in the Venue Model
             venue = show.venue
-            temp_dict = {}
-            temp_dict["venue_id"] = show.venue_id
-            temp_dict["venue_name"] = venue.name
-            temp_dict["venue_image_link"] = venue.image_link
-            # convert it to string because parsal needs it to be string not datetime
-            temp_dict["start_time"] = str(show.start_time)
+            if venue:
+                temp_dict = {}
+                temp_dict["venue_id"] = show.venue_id
+                temp_dict["venue_name"] = venue.name
+                temp_dict["venue_image_link"] = venue.image_link
+                # convert it to string because parsal needs it to be string not datetime
+                temp_dict["start_time"] = str(show.start_time)
 
-            if show.start_time > datetime.now():
-                upcoming.append(temp_dict)
-            else:
-                past.append(temp_dict)
+                if show.start_time > datetime.now():
+                    upcoming.append(temp_dict)
+                else:
+                    past.append(temp_dict)
 
         # return depends on what is neede
         if period == "upcoming":
@@ -209,7 +209,7 @@ def search_venues():
 
     # get what the user searched for
     search_term = request.form.get('search_term', '')
-    venues = Venue.query.all()
+    venues = Venue.query.order_by(Venue.name).all()
     
     # change to lowe case to make it "case-insensitive"
     search = search_term.lower()
@@ -432,7 +432,7 @@ def show_artist(artist_id):
     "upcoming_shows": upcoming,
     "past_shows_count": len(past),
     "upcoming_shows_count": len(upcoming),
-    }
+        }
     
     # data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
     return render_template('pages/show_artist.html', artist=data)
@@ -599,7 +599,7 @@ def create_artist_submission():
 
         # TODO: on unsuccessful db insert, flash an error instead.
         # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
-        flash('An error occurred. Venue ' + request.form['name'] + ' could not be listed.')
+        flash('An error occurred. Artist ' + request.form['name'] + ' could not be listed.')
     finally:
         with app.app_context():
             db.session.close()
@@ -620,6 +620,7 @@ def shows():
     for show in shows:
         temp_dict = {}
         venue = show.venue
+        # to make sure that there is no show with a deleted venue
         if venue:
             artist = show.artist
 

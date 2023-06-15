@@ -2,10 +2,10 @@ from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, ValidationError
 from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp
-from app import app, db, Venue, Artist
 
 
 def validate_artist_id(form, field):
+    from app import app, db, Venue, Artist
     with app.app_context():
         # to make sure user enters an existing Id for venue/artist
         artist_ids = db.session.query(Artist.id).all()
@@ -16,6 +16,7 @@ def validate_artist_id(form, field):
         raise ValidationError("Please enter the Id of an existing artist")
 
 def validate_venue_id(form, field):
+    from app import app, db, Venue, Artist
     with app.app_context():
         # to make sure user enters an existing Id for venue/artist
         venue_ids = db.session.query(Venue.id).all()
