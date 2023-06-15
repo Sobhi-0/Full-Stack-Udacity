@@ -1,13 +1,13 @@
 from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField, ValidationError
-from wtforms.validators import DataRequired, AnyOf, URL, Optional, Regexp
+from wtforms.validators import DataRequired, URL, Optional, Regexp
 
 
+# to make sure user enters an existing Id for venue/artist
 def validate_artist_id(form, field):
     from app import app, db, Venue, Artist
     with app.app_context():
-        # to make sure user enters an existing Id for venue/artist
         artist_ids = db.session.query(Artist.id).all()
         # to get the ids only
         artist_ids = [str(artist[0]) for artist in artist_ids]
@@ -15,10 +15,10 @@ def validate_artist_id(form, field):
     if field.data not in artist_ids:
         raise ValidationError("Please enter the Id of an existing artist")
 
+# to make sure user enters an existing Id for venue/artist
 def validate_venue_id(form, field):
     from app import app, db, Venue, Artist
     with app.app_context():
-        # to make sure user enters an existing Id for venue/artist
         venue_ids = db.session.query(Venue.id).all()
         # to get the ids only
         venue_ids = [str(venue[0]) for venue in venue_ids]
@@ -116,7 +116,7 @@ class VenueForm(Form):
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
-        # The front end already restricts the choices of genres to the ones in the ptovided list
+        # The front end already restricts the choices of genres to the ones in the provided list
         'genres', validators=[DataRequired()],
         choices=[
             ('Alternative', 'Alternative'),
