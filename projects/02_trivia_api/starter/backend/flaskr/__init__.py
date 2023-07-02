@@ -58,10 +58,16 @@ def create_app(db_URI="", test_config=None):
         categories = Category.query.order_by(Category.id).all()
         categories_list = [category.format() for category in categories]
         print(categories_list)
-        
+
+        categories_dict = {}
+        for i in categories_list:
+            categories_dict[str(i['id'])] = i['type']
+        print(categories_dict)
+
+
         return jsonify({
             'success': True,
-            'categories': categories_list
+            'categories': categories_dict
         })
 
 
