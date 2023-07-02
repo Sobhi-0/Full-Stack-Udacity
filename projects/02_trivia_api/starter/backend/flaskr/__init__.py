@@ -57,13 +57,11 @@ def create_app(db_URI="", test_config=None):
     def show_categories():
         categories = Category.query.order_by(Category.id).all()
         categories_list = [category.format() for category in categories]
-        print(categories_list)
-
+        
+        # Makes the correct format of the dictionary as {'id': 'type'}
         categories_dict = {}
         for i in categories_list:
             categories_dict[str(i['id'])] = i['type']
-        print(categories_dict)
-
 
         return jsonify({
             'success': True,
@@ -89,18 +87,22 @@ def create_app(db_URI="", test_config=None):
         questions = Question.query.order_by(Question.id).all()
         current_questions = paginate_questions(request, questions)
 
-        categories = Category.query.order_by(Category.id).all()
-        categories_list = [category.format() for category in categories]
-        print("here ==>", categories_list)
-
         if len(current_questions) == 0:
             abort(404)
+
+        categories = Category.query.order_by(Category.id).all()
+        categories_list = [category.format() for category in categories]
+
+        # Makes the correct format of the dictionary as {'id': 'type'}
+        categories_dict = {}
+        for i in categories_list:
+            categories_dict[str(i['id'])] = i['type']
 
         return jsonify({
             'success': True,
             'questions': current_questions,
             'total_questions': len(questions),
-            'categories': categories_list,
+            'categories': categories_dict,
             'current_category': 1
         })
 
