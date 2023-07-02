@@ -116,17 +116,29 @@ class QuestionView extends Component {
   }
 
   render() {
+    // console.log('Questions:', this.state.questions);
+    console.log("123 Categories:", this.state.categories);
+    console.log("123 Questions:", this.state.questions);
     return (
       <div className="question-view">
         <div className="categories-list">
           <h2 onClick={() => {this.getQuestions()}}>Categories</h2>
           <ul>
-            {Object.keys(this.state.categories).map((id, ) => (
+          {Object.keys(this.state.categories).map((id) => {
+
+            console.log("State Categories:", this.state.categories);
+            console.log("ID:", id);
+            const category = this.state.categories[id].type;
+
+            console.log('Categories:', category);
+            console.log('Categories Type:', typeof category);
+            return (
               <li key={id} onClick={() => {this.getByCategory(id)}}>
-                {this.state.categories[id]}
-                <img className="category" src={`${this.state.categories[id].toLowerCase()}.svg`}/>
+                {category}
+                <img className="category" src={`${category.toLowerCase()}.svg`}/>
               </li>
-            ))}
+            );
+          })}
           </ul>
           <Search submitSearch={this.submitSearch}/>
         </div>
@@ -137,7 +149,8 @@ class QuestionView extends Component {
               key={q.id}
               question={q.question}
               answer={q.answer}
-              category={this.state.categories[q.category]}
+              // category={this.state.categories[q.category]}
+              category={String(this.state.categories[q.category - 1].type)}
               difficulty={q.difficulty}
               questionAction={this.questionAction(q.id)}
             />

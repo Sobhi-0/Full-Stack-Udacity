@@ -8,6 +8,16 @@ from models import Category, Question, setup_db
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+    page = request.args.get("page", 1, type=int)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    end = start + QUESTIONS_PER_PAGE
+
+    questions = [question.format() for question in selection]
+    current_questions = questions[start:end]
+
+    return current_questions
+
 # TODO: Restore the original shape??
 # def create_app(test_config=None):
 def create_app(db_URI="", test_config=None):
@@ -27,15 +37,15 @@ def create_app(db_URI="", test_config=None):
     '''
     @TODO: Use the after_request decorator to set Access-Control-Allow
     '''
-    @app.route('/categories')
-    def show_categories():
-        categories = Category.query.order_by(Category.id).all()
-        categories_list = [category.format() for category in categories]
-        
-        return jsonify({
-            'success': True,
-            'categories': categories_list
-        })
+    @app.after_request
+    def after_request(response):
+        response.headers.add(
+            "Access-Control-Allow-Headers", "Content-Type,Authorization,true"
+        )
+        response.headers.add(
+            "Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS"
+        )
+        return response
 
 
     '''
@@ -43,6 +53,16 @@ def create_app(db_URI="", test_config=None):
     Create an endpoint to handle GET requests 
     for all available categories.
     '''
+    @app.route('/categories')
+    def show_categories():
+        categories = Category.query.order_by(Category.id).all()
+        categories_list = [category.format() for category in categories]
+        print(categories_list)
+        
+        return jsonify({
+            'success': True,
+            'categories': categories_list
+        })
 
 
     '''
@@ -57,6 +77,26 @@ def create_app(db_URI="", test_config=None):
     ten questions per page and pagination at the bottom of the screen for three pages.
     Clicking on the page numbers should update the questions. 
     '''
+    @app.route('/questions')
+    def show_paginated_questions():
+        # Calls the paginating function
+        questions = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, questions)
+
+        categories = Category.query.order_by(Category.id).all()
+        categories_list = [category.format() for category in categories]
+        print("here ==>", categories_list)
+
+        if len(current_questions) == 0:
+            abort(404)
+
+        return jsonify({
+            'success': True,
+            'questions': current_questions,
+            'total_questions': len(questions),
+            'categories': categories_list,
+            'current_category': 1
+        })
 
     '''
     @TODO: 
@@ -115,6 +155,15 @@ def create_app(db_URI="", test_config=None):
     Create error handlers for all expected errors 
     including 404 and 422. 
     '''
+    @app.errorhandler(404)
+    def not_found(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 404,
+                "message": "resource not found"
+            }), 404)
+
 
     return app
 

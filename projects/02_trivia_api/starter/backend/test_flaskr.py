@@ -35,14 +35,38 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    # Test the endpoint to handle GET requests for all available categories
     def test_show_categories(self):
         res = self.client().get('/categories')
         data = json.loads(res.data)
         
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertTrue(data['categories'])
+        self.assertTrue(len(data['categories']))
         
+
+    # Test the endpoint to handle GET requests for questions
+    def test_show_paginated_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['questions']))
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['categories']))
+        # self.assertTrue(data['current_category'])
+
+    # Test for possible error
+    def test_404_error_paginating_questions_page_beyond_available(self):
+        res = self.client().get('/questions?page=1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
+
 
 
 # Make the tests conveniently executable
