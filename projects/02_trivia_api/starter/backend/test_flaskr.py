@@ -66,6 +66,8 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
 
+
+    # Test for the endpoint to DELETE question using a question ID
     def test_delete_question(self):
         question_id = 9
         res = self.client().delete(f'/questions/{question_id}')
@@ -76,6 +78,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], str(question_id))
         self.assertTrue(data['total_questions'])
 
+    # Test for possible error
     def test_404_delete_nonexistent_question(self):
         res = self.client().delete('/questions/1000')
         data = json.loads(res.data)

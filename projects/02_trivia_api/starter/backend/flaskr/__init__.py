@@ -55,18 +55,24 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/categories')
     def show_categories():
-        categories = Category.query.order_by(Category.id).all()
-        categories_list = [category.format() for category in categories]
-        
-        # Makes the correct format of the dictionary as {'id': 'type'}
-        categories_dict = {}
-        for i in categories_list:
-            categories_dict[str(i['id'])] = i['type']
+        try:
+            categories = Category.query.order_by(Category.id).all()
+            categories_list = [category.format() for category in categories]
 
-        return jsonify({
-            'success': True,
-            'categories': categories_dict
-        })
+            if len(categories_list) == 0:
+                abort(404)
+            
+            # Makes the correct format of the dictionary as {'id': 'type'}
+            categories_dict = {}
+            for i in categories_list:
+                categories_dict[str(i['id'])] = i['type']
+
+            return jsonify({
+                'success': True,
+                'categories': categories_dict
+            })
+        except:
+            abort(500)
 
 
     '''
@@ -83,28 +89,32 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/questions')
     def show_paginated_questions():
-        # Calls the paginating function
-        questions = Question.query.order_by(Question.id).all()
-        current_questions = paginate_questions(request, questions)
+        try:
+            # Calls the paginating function
+            questions = Question.query.order_by(Question.id).all()
+            current_questions = paginate_questions(request, questions)
 
-        if len(current_questions) == 0:
-            abort(404)
+            if len(current_questions) == 0:
+                abort(404)
 
-        categories = Category.query.order_by(Category.id).all()
-        categories_list = [category.format() for category in categories]
+            categories = Category.query.order_by(Category.id).all()
+            categories_list = [category.format() for category in categories]
 
-        # Makes the correct format of the dictionary as {'id': 'type'}
-        categories_dict = {}
-        for i in categories_list:
-            categories_dict[str(i['id'])] = i['type']
+            # Makes the correct format of the dictionary as {'id': 'type'}
+            categories_dict = {}
+            for i in categories_list:
+                categories_dict[str(i['id'])] = i['type']
 
-        return jsonify({
-            'success': True,
-            'questions': current_questions,
-            'total_questions': len(questions),
-            'categories': categories_dict,
-            'current_category': 1
-        })
+            return jsonify({
+                'success': True,
+                'questions': current_questions,
+                'total_questions': len(questions),
+                'categories': categories_dict,
+                'current_category': 1
+            })
+        except:
+            abort(500)
+
 
     '''
     @TODO: 
@@ -115,18 +125,20 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/questions/<question_id>', methods=['DELETE'])
     def delete_question(question_id):
-        question = Question.query.get(question_id)
-        if question is None:
-            abort(404)
-        question.delete()
+        try:
+            question = Question.query.get(question_id)
+            if question is None:
+                abort(404)
+            question.delete()
 
-        questions = Question.query.all()
-        return jsonify({
-            'success': True,
-            'deleted': question_id,
-            'total_questions': len(questions)
-        })
-
+            questions = Question.query.all()
+            return jsonify({
+                'success': True,
+                'deleted': question_id,
+                'total_questions': len(questions)
+            })
+        except:
+            abort(422)
     '''
     @TODO: 
     Create an endpoint to POST a new question, 
@@ -185,7 +197,23 @@ def create_app(db_URI="", test_config=None):
                 "message": "resource not found"
             }), 404)
 
+    @app.errorhandler(422)
+    def unprocessable(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 422,
+                "message": "unprocessable"
+            }), 404)
 
+    @app.errorhandler(500)
+    def unprocessable(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 500,
+                "message": "internal server error"
+            }), 404)
     return app
 
     
