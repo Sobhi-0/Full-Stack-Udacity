@@ -77,12 +77,17 @@ class TriviaTestCase(unittest.TestCase):
 
     # Test for the endpoint to DELETE question using a question ID
     def test_delete_question(self):
-        question_id = 31
+        question_id = 6
         res = self.client().delete(f'/questions/{question_id}')
         data = json.loads(res.data)
+        
+        # Checking that it actaully got deleted from the database
+        with self.app.app_context():
+            question = Question.query.get(question_id)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        self.assertEqual(question, None)
         self.assertEqual(data['deleted'], str(question_id))
         self.assertTrue(data['total_questions'])
 
@@ -103,6 +108,8 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        # Checking that it actaully got created in the database
+        # if true then there is id which means it was created
         self.assertTrue(data['created'])
         self.assertTrue(data['total_questions'])
 
