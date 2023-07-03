@@ -157,33 +157,47 @@ def create_app(db_URI="", test_config=None):
     def add_question():
         body = request.get_json()
 
+        search = body.get('searchTerm')
+
         question = body.get('question')
         answer = body.get('answer')
         difficulty = body.get('difficulty')
         category = body.get('category')
+        
+        if search:
+            try:
+                questions = Question.query.order_by(Question.id).filter(
+                    Question.question.ilike(f'%{search}%')
+                )
+                current_questions = paginate_questions(request, questions)
 
-        # To make sure all the fields are provided in the API request
-        if question is None or answer is None or difficulty is None or category is None:
-            abort(400)
+                return jsonify({
+                    'success': True,
+                    'questions': current_questions,
+                    'found_questions': len(questions.all())
+                })
+            except:
+               abort(422) 
+        else:
+            # To make sure all the fields are provided in the API request
+            if question is None or answer is None or difficulty is None or category is None:
+                abort(400)
 
-        # To make sure all the fields are filled on the frontend
-        if question == "" or answer == "":
-            abort(400)
-        try:
-            new_question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
-            new_question.insert()
+            # To make sure all the fields are filled on the frontend
+            if question == "" or answer == "":
+                abort(400)
+            try:
+                new_question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
+                new_question.insert()
 
-            return jsonify({
-                'success': True,
-                'created':new_question.id,
-                'total_questions': len(Question.query.all())
-            })
+                return jsonify({
+                    'success': True,
+                    'created':new_question.id,
+                    'total_questions': len(Question.query.all())
+                })
 
-        except:
-            abort(422)
-
-
-
+            except:
+                abort(422)
 
     '''
     @TODO: 
@@ -195,6 +209,8 @@ def create_app(db_URI="", test_config=None):
     only question that include that string within their question. 
     Try using the word "title" to start. 
     '''
+    # Done in the previous endpoint
+
 
     '''
     @TODO: 

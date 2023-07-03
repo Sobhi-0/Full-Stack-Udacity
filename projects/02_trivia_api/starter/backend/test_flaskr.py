@@ -106,6 +106,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['created'])
         self.assertTrue(data['total_questions'])
 
+    # Test for possible error
     def test_405_adding_question_with_id_in_the_request(self):
         res = self.client().post('/questions/45', json=self.new_question)
         data = json.loads(res.data)
@@ -113,6 +114,32 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 405)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'method not allowed')
+
+
+    # Test for POST endpoint to get questions based on a search term
+    def test_search_questions_with_resault(self):
+        res = self.client().post('/questions', json={'searchTerm': 'title'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['found_questions'])
+    
+    # Test for POST endpoint to get questions based on a search term
+    # with no resaults
+    def test_search_questions_without_resault(self):
+        res = self.client().post('/questions', json={'searchTerm': 'SomethingUnknown'})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertEqual(len(data['questions']), 0)
+        self.assertEqual(data['found_questions'], 0)
+        
+        
+
+
 
 
 
