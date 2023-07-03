@@ -55,13 +55,13 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/categories')
     def show_categories():
-        try:
-            categories = Category.query.order_by(Category.id).all()
-            categories_list = [category.format() for category in categories]
+        categories = Category.query.order_by(Category.id).all()
+        categories_list = [category.format() for category in categories]
 
-            if len(categories_list) == 0:
-                abort(404)
-            
+        if len(categories_list) == 0:
+            abort(404)
+
+        try:
             # Makes the correct format of the dictionary as {'id': 'type'}
             categories_dict = {}
             for i in categories_list:
@@ -89,14 +89,14 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/questions')
     def show_paginated_questions():
+        # Calls the paginating function
+        questions = Question.query.order_by(Question.id).all()
+        current_questions = paginate_questions(request, questions)
+
+        if len(current_questions) == 0:
+            abort(404)
+
         try:
-            # Calls the paginating function
-            questions = Question.query.order_by(Question.id).all()
-            current_questions = paginate_questions(request, questions)
-
-            if len(current_questions) == 0:
-                abort(404)
-
             categories = Category.query.order_by(Category.id).all()
             categories_list = [category.format() for category in categories]
 
@@ -125,10 +125,12 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/questions/<question_id>', methods=['DELETE'])
     def delete_question(question_id):
+        question = Question.query.get(question_id)
+
+        if question is None:
+            abort(404)
+
         try:
-            question = Question.query.get(question_id)
-            if question is None:
-                abort(404)
             question.delete()
 
             questions = Question.query.all()
@@ -139,6 +141,8 @@ def create_app(db_URI="", test_config=None):
             })
         except:
             abort(422)
+
+
     '''
     @TODO: 
     Create an endpoint to POST a new question, 
@@ -149,6 +153,37 @@ def create_app(db_URI="", test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.  
     '''
+    @app.route('/questions', methods=['POST'])
+    def add_question():
+        body = request.get_json()
+
+        question = body.get('question')
+        answer = body.get('answer')
+        difficulty = body.get('difficulty')
+        category = body.get('category')
+
+        # To make sure all the fields are provided in the API request
+        if question is None or answer is None or difficulty is None or category is None:
+            abort(400)
+
+        # To make sure all the fields are filled on the frontend
+        if question == "" or answer == "":
+            abort(400)
+        try:
+            new_question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
+            new_question.insert()
+
+            return jsonify({
+                'success': True,
+                'created':new_question.id,
+                'total_questions': len(Question.query.all())
+            })
+
+        except:
+            abort(422)
+
+
+
 
     '''
     @TODO: 
@@ -197,6 +232,15 @@ def create_app(db_URI="", test_config=None):
                 "message": "resource not found"
             }), 404)
 
+    @app.errorhandler(405)
+    def not_found(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 405,
+                "message": "method not allowed"
+            }), 405)
+
     @app.errorhandler(422)
     def unprocessable(error):
         return (
@@ -204,6 +248,15 @@ def create_app(db_URI="", test_config=None):
                 "success": False,
                 "error": 422,
                 "message": "unprocessable"
+            }), 422)
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 400,
+                "message": "bad request"
             }), 404)
 
     @app.errorhandler(500)
@@ -213,7 +266,8 @@ def create_app(db_URI="", test_config=None):
                 "success": False,
                 "error": 500,
                 "message": "internal server error"
-            }), 404)
+            }), 500)
+
     return app
 
     

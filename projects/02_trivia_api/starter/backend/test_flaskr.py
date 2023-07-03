@@ -20,6 +20,14 @@ class TriviaTestCase(unittest.TestCase):
 
         # setup_db(self.app, self.database_path)
 
+        self.new_question = {
+            'question': 'What is tha name of this project?',
+            'answer': 'Trivia API',
+            'difficulty': 1,
+            'category': 5
+        }
+
+
         # # binds the app to the current context
         # with self.app.app_context():
         #     self.db = SQLAlchemy()
@@ -86,6 +94,25 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+
+    # Test for endpoint to POST a new question
+    def test_adding_question(self):
+        res = self.client().post('/questions', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(data['created'])
+        self.assertTrue(data['total_questions'])
+
+    def test_405_adding_question_with_id_in_the_request(self):
+        res = self.client().post('/questions/45', json=self.new_question)
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'method not allowed')
 
 
 
