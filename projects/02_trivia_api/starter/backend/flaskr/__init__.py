@@ -225,7 +225,7 @@ def create_app(db_URI="", test_config=None):
         questions = Question.query.order_by(Question.id).filter_by(category=category_id).all()
         if len(questions) == 0:
             abort(404)
-            
+
         questions_list = paginate_questions(request, questions)
         
         return jsonify({
@@ -247,13 +247,51 @@ def create_app(db_URI="", test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not. 
     '''
+    @app.route('/quizzes', methods=['POST'])
+    def quizzes_play():
+        body = request.get_json()
+        
+        quiz_category = body.get('quiz_category')
+        previous_questions = body.get('previous_questions')
+
+        print("quiz_category ==>", quiz_category)
+        print("previous_questions ==>", previous_questions)
+
+        questions = Question.query.filter_by(category=quiz_category['id']).all()
+        questions_list = [question.format() for question in questions if int(question.format()['id']) not in previous_questions]
+
+        if len(questions_list) == 0:
+            return jsonify({
+                'success': True,
+                'previous_questions': previous_questions
+            })
+
+        else:
+            random_question = random.choice(questions_list)
+            print("random_question ==>", random_question)
+            print("random_question ==>", random_question['id'])
+
+            return jsonify({
+                'success': True,
+                'random_question': random_question,
+                'previous_questions': previous_questions
+            })
 
     '''
     @TODO: 
     Create error handlers for all expected errors 
     including 404 and 422. 
     '''
+    @app.errorhandler(400)
+    def bad_request(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": 400,
+                "message": "bad request"
+            }), 404)
     @app.errorhandler(404)
+
     def not_found(error):
         return (
             jsonify({
@@ -279,15 +317,6 @@ def create_app(db_URI="", test_config=None):
                 "error": 422,
                 "message": "unprocessable"
             }), 422)
-
-    @app.errorhandler(400)
-    def bad_request(error):
-        return (
-            jsonify({
-                "success": False,
-                "error": 400,
-                "message": "bad request"
-            }), 404)
 
     @app.errorhandler(500)
     def unprocessable(error):

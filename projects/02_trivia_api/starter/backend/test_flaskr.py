@@ -43,6 +43,15 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    # Test for nonexistent endpoints
+    def test_404_nonexistent(self):
+        res = self.client().get('/questions?page=1000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'resource not found')
+
     # Test the endpoint to handle GET requests for all available categories
     def test_show_categories(self):
         res = self.client().get('/categories')
@@ -81,12 +90,13 @@ class TriviaTestCase(unittest.TestCase):
         res = self.client().delete(f'/questions/{question_id}')
         data = json.loads(res.data)
         
-        # Checking that it actaully got deleted from the database
+        # Testing that it actaully got deleted from the database
         with self.app.app_context():
             question = Question.query.get(question_id)
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        # If it is None then it was deleted from the database
         self.assertEqual(question, None)
         self.assertEqual(data['deleted'], str(question_id))
         self.assertTrue(data['total_questions'])
@@ -108,7 +118,7 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        # Checking that it actaully got created in the database
+        # Testing that it actaully got created in the database
         # if true then there is id which means it was created
         self.assertTrue(data['created'])
         self.assertTrue(data['total_questions'])
@@ -164,6 +174,41 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 404)
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'resource not found')
+
+
+    # Test for POST endpoint to get questions to play the quiz
+    # This tests when there is avaiable questions to be played 
+    # in this test case there is only one question remaining which is 20
+    # (based on the trivia_test database trivia.psql)
+    # it should be the one that is returned by the API
+    def test_quizzes_play_with_available_questions(self):
+        res = self.client().post('/quizzes', json={'quiz_category': {'type': 'Science', 'id': '1'}, 'previous_questions': [22, 21]})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        # Tests that there is a returned question
+        self.assertTrue(data['random_question'])
+        # Tests that the returned question was not shown before
+        self.assertEqual(data['random_question']['id'], 20)
+        # Tests that the previous_questions list is returned
+        self.assertTrue(data['previous_questions'])
+
+    # Test for POST endpoint to get questions to play the quiz
+    # This tests when there is NO avaiable questions to be played 
+    def test_quizzes_play_with_NO_available_questions(self):
+        res = self.client().post('/quizzes', json={'quiz_category': {'type': 'Science', 'id': '1'}, 'previous_questions': [20, 21, 22]})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+        # Tests that the previous_questions list is returned with
+        # all the displayed questions
+        self.assertEqual(len(data['previous_questions']), 3)
+
+
+
+
 
 
 
