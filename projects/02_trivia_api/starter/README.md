@@ -13,7 +13,7 @@ In the application you can:
 4. Search for questions.
 5. Play the quiz game, randomizing either all questions or within a specific category.
 
-we are always working on enchancing the users' experience and we are always welcoming your improvments.
+We are always working on enchancing the users' experience and we are always welcoming your improvments.
 
 ## Want to fix a bug? Or perhaps, add a feature?
 
@@ -24,13 +24,15 @@ If you are intrested in contributing into improving our application then kindly 
 ## Dependancies
 
 -NodeJS 13.6.0
+
 -Python 3
 
-To install the ```requirements.txt``` in the backend dierectory run ```pip install -f requirements.txt```
+To install the ```requirements``` , in the backend dierectory run ```pip install -r requirements.txt```
 
 ### Backend
 
 In the backend dierectory
+
 bash:
 ```bash
 export FLASK_APP=flaskr
@@ -38,6 +40,7 @@ export FLASK_ENV=development
 flask run
 ```
 ===================================
+
 PowerShell:
 ```PS
 $env:FLASK_APP="flaskr"
