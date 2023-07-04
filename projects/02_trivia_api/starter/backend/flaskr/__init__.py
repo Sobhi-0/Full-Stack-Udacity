@@ -286,8 +286,12 @@ def create_app(db_URI="", test_config=None):
             quiz_category = body.get('quiz_category')
             previous_questions = body.get('previous_questions')
 
-            # Makes a list of the questions in the provided category
-            questions = Question.query.filter_by(category=quiz_category['id']).all()
+            if quiz_category['id'] == 0:
+                questions = Question.query.all()
+            else:
+                # Makes a list of the questions in the provided category
+                questions = Question.query.filter_by(category=quiz_category['id']).all()
+
             # Keeps only the questions that are not shown before
             questions_list = [question.format() for question in questions if int(question.format()['id']) not in previous_questions]
 
@@ -304,7 +308,7 @@ def create_app(db_URI="", test_config=None):
 
                 return jsonify({
                     'success': True,
-                    'random_question': random_question,
+                    'question': random_question,
                     'previous_questions': previous_questions
                 })
         except:
