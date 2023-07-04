@@ -55,12 +55,13 @@ By making notes ahead of time, you will practice the core skill of being able to
 ## API Documentation
 
 ### Getting Started
-Base URL: https://localhost:5000/
+Base URL :  https://localhost:5000/
 
 ### Error Handling
 We are using HTTP response codes to indicate the success or failure of an API request. The responses are formated in JSON indicating that a failure happend and showing the error code and message.
 
 Example:
+
 ```JSON
 {
     'success': False,
@@ -157,7 +158,8 @@ DELETE /questions/<question_id>
 Deletes the question of the given ID if exists.
 - Request Arguments: ```/<question_id>```
 - Returns: ID of the deleted question with the total number of remaining questions
-Request URL:
+
+Request URL example:
 
 ```bash
 curl -X DELETE http://127.0.0.1:5000/questions/5
@@ -179,13 +181,13 @@ POST /questions  (Add Question)
 - Returns: The added question id and the total number of questions(including the new question)
 
 
-Request URL:
+Request URL example:
 
 ```bash
  curl -X POST -H "Content-Type: application/json" -d '{"question": "What is the capital of France?", "answer": "Paris", "difficulty": 2, "category": 3}' http://localhost:5000/questions
  ```
 
- Response Example:
+Response Example:
 
 ```JSON
 {
@@ -200,7 +202,7 @@ POST /questions  (Search for a Question)
 - Request Arguments: Search term
 - Returns: The number of questions found and the questions
 
-Request URL:
+Request URL example:
 
 ```bash
  curl -X POST -H "Content-Type: application/json" -d '{\"searchTerm\":\"title\"}' http://localhost:5000/questions
@@ -230,7 +232,7 @@ Gets questions by category
 - Request Arguments: The category ID
 - Returns: Current category, the number of the found questions and the questions
 
-Request URL:
+Request URL example:
 
 ```bash
 curl http://127.0.0.1:5000/categories/5/questions
