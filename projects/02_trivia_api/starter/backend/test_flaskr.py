@@ -201,9 +201,9 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
         # Tests that there is a returned question
-        self.assertTrue(data['random_question'])
+        self.assertTrue(data['question'])
         # Tests that the returned question was not shown before
-        self.assertEqual(data['random_question']['id'], 20)
+        self.assertEqual(data['question']['id'], 20)
         # Tests that the previous_questions list is returned
         self.assertTrue(data['previous_questions'])
 
