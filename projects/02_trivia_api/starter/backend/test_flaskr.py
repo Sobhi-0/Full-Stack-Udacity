@@ -23,7 +23,6 @@ class TriviaTestCase(unittest.TestCase):
 
     def setUp(self):
         """Define test variables and initialize app."""
-        # TODO: Restore the original shape??
         self.database_name = "trivia_test"
         self.database_path = "postgresql://{}/{}".format('localhost:5432', self.database_name)
         self.app = create_app(self.database_path)
