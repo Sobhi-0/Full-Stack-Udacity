@@ -83,13 +83,13 @@ Fetches a dictionary of categories in which the keys are the ids and the value i
 - Returns: An object with a single key, categories, that contains a object of {'id': 'category'}
 
 Request URL example:
--
+
 ```bash
 curl http://127.0.0.1:5000/categories
 ```
 
 Response Example:
--
+
 ```JSON
 {
   "categories": {
@@ -113,15 +113,14 @@ Total number of questions
 Current Category
 
 Request URL example:
--
+
 ```bash
 curl http://127.0.0.1:5000/questions?page=1
 ```
 
 Response Example:
--
+
 ```JSON
-(venv) PS C:\Users\Sobhi\FSND\projects\02_trivia_api\starter> curl http://127.0.0.1:5000/questions?page=1
 {
   "categories": {
     "1": "Science",
@@ -159,13 +158,13 @@ Deletes the question of the given ID if exists.
 - Request Arguments: ```/<question_id>```
 - Returns: ID of the deleted question with the total number of remaining questions
 Request URL:
--
+
 ```bash
 curl -X DELETE http://127.0.0.1:5000/questions/5
 ```
 
 Response Example:
--
+
 ```JSON
 {
   "deleted": "5",
@@ -181,13 +180,13 @@ POST /questions  (Add Question)
 
 
 Request URL:
--
+
 ```bash
  curl -X POST -H "Content-Type: application/json" -d '{"question": "What is the capital of France?", "answer": "Paris", "difficulty": 2, "category": 3}' http://localhost:5000/questions
  ```
 
  Response Example:
--
+
 ```JSON
 {
   "created": 24,
@@ -202,13 +201,13 @@ POST /questions  (Search for a Question)
 - Returns: The number of questions found and the questions
 
 Request URL:
--
+
 ```bash
  curl -X POST -H "Content-Type: application/json" -d '{\"searchTerm\":\"title\"}' http://localhost:5000/questions
  ```
 
 Response Example:
--
+
 ```JSON
 {
   "found_questions": 1,
@@ -232,13 +231,13 @@ Gets questions by category
 - Returns: Current category, the number of the found questions and the questions
 
 Request URL:
--
+
 ```bash
 curl http://127.0.0.1:5000/categories/5/questions
 ```
 
 Response Example:
--
+
 ```JSON
 {
   "current_category": "5",
