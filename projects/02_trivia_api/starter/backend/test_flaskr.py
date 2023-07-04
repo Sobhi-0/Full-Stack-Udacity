@@ -6,6 +6,17 @@ from flask_sqlalchemy import SQLAlchemy
 from flaskr import create_app
 from models import Category, Question, setup_db
 
+"""
+IMPORTANT NOTE to the reviewer:
+Beacuse setup_db was used more than once through the application and that was causing this error
+
+RuntimeError: A 'SQLAlchemy' instance has already been registered on this Flask app
+
+I adjusted the code so it works, please refer to this StackOverflow question for more
+details on what changed and the error itself
+https://stackoverflow.com/questions/75523569/runtimeerror-a-sqlalchemy-instance-has-already-been-registered-on-this-flask
+"""
+
 
 class TriviaTestCase(unittest.TestCase):
     """This class represents the trivia test case"""
@@ -18,8 +29,10 @@ class TriviaTestCase(unittest.TestCase):
         self.app = create_app(self.database_path)
         self.client = self.app.test_client
 
+        # See the note to know why commented
         # setup_db(self.app, self.database_path)
 
+        # Question to be added where needed in the tests
         self.new_question = {
             'question': 'What is tha name of this project?',
             'answer': 'Trivia API',
@@ -27,7 +40,7 @@ class TriviaTestCase(unittest.TestCase):
             'category': 5
         }
 
-
+        # See the note to know why commented
         # # binds the app to the current context
         # with self.app.app_context():
         #     self.db = SQLAlchemy()
@@ -45,7 +58,7 @@ class TriviaTestCase(unittest.TestCase):
     """
     # Test for nonexistent endpoints
     def test_404_nonexistent(self):
-        res = self.client().get('/questions?page=1000')
+        res = self.client().get('/nonexistent')
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
@@ -69,6 +82,7 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+        # Makes sure there is questions
         self.assertTrue(len(data['questions']))
         self.assertTrue(data['total_questions'])
         self.assertTrue(len(data['categories']))
@@ -101,7 +115,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['deleted'], str(question_id))
         self.assertTrue(data['total_questions'])
 
-    # Test for possible error
+    # Test for deleting a question that doesn't exist
     def test_404_delete_nonexistent_question(self):
         res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
@@ -118,8 +132,8 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        # Testing that it actaully got created in the database
-        # if true then there is id which means it was created
+        # Checking if it actaully got created on the database
+        # if true then there is an id which means it was created
         self.assertTrue(data['created'])
         self.assertTrue(data['total_questions'])
 
@@ -166,7 +180,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
         self.assertTrue(data['current_category'])
 
-    # Test if the category doesn't exist
+    # Test if the category doesn't exist when getting questions based on category
     def test_404_get_questions_by_not_available_category(self):
         res = self.client().get('/categories/10/questions')
         data = json.loads(res.data)
@@ -205,14 +219,6 @@ class TriviaTestCase(unittest.TestCase):
         # Tests that the previous_questions list is returned with
         # all the displayed questions
         self.assertEqual(len(data['previous_questions']), 3)
-
-
-
-
-
-
-
-
 
 
 # Make the tests conveniently executable

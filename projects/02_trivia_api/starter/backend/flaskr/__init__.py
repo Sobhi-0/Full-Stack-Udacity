@@ -9,20 +9,32 @@ from models import Category, Question, setup_db
 QUESTIONS_PER_PAGE = 10
 
 def paginate_questions(request, selection):
+    # Takes the page number (if not provided takes 1 as a default)
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
     end = start + QUESTIONS_PER_PAGE
 
+    # Makes the questions in the apprpiate format
     questions = [question.format() for question in selection]
     current_questions = questions[start:end]
 
     return current_questions
 
-# TODO: Restore the original shape??
 # def create_app(test_config=None):
 def create_app(db_URI="", test_config=None):
     # create and configure the app
     app = Flask(__name__)
+    
+    """
+    IMPORTANT NOTE to the reviewer:
+    Beacuse setup_db was used more than once through the application and that was causing this error
+
+    RuntimeError: A 'SQLAlchemy' instance has already been registered on this Flask app
+
+    I adjusted the code so it works, please refer to this StackOverflow question for more
+    details on what changed and the error itself
+    https://stackoverflow.com/questions/75523569/runtimeerror-a-sqlalchemy-instance-has-already-been-registered-on-this-flask
+    """
 
     if db_URI:
         setup_db(app, db_URI)
@@ -56,6 +68,7 @@ def create_app(db_URI="", test_config=None):
     @app.route('/categories')
     def show_categories():
         categories = Category.query.order_by(Category.id).all()
+        # Makes the categories in a dictionary format
         categories_list = [category.format() for category in categories]
 
         if len(categories_list) == 0:
@@ -63,6 +76,7 @@ def create_app(db_URI="", test_config=None):
 
         try:
             # Makes the correct format of the dictionary as {'id': 'type'}
+            # i refers to single dictionary
             categories_dict = {}
             for i in categories_list:
                 categories_dict[str(i['id'])] = i['type']
@@ -72,6 +86,7 @@ def create_app(db_URI="", test_config=None):
                 'categories': categories_dict
             })
         except:
+            # If anything happened it is propably an internal error
             abort(500)
 
 
@@ -93,14 +108,17 @@ def create_app(db_URI="", test_config=None):
         questions = Question.query.order_by(Question.id).all()
         current_questions = paginate_questions(request, questions)
 
+        # If there is no questions raises an error
         if len(current_questions) == 0:
             abort(404)
 
         try:
             categories = Category.query.order_by(Category.id).all()
+            # Makes the categories in a dictionary format
             categories_list = [category.format() for category in categories]
 
             # Makes the correct format of the dictionary as {'id': 'type'}
+            # i refers to single dictionary
             categories_dict = {}
             for i in categories_list:
                 categories_dict[str(i['id'])] = i['type']
@@ -113,6 +131,7 @@ def create_app(db_URI="", test_config=None):
                 'current_category': 1
             })
         except:
+            # If anything happened it is propably an internal error
             abort(500)
 
 
@@ -127,6 +146,7 @@ def create_app(db_URI="", test_config=None):
     def delete_question(question_id):
         question = Question.query.get(question_id)
 
+        # If the question doesn't exist it raises an error
         if question is None:
             abort(404)
 
@@ -140,6 +160,7 @@ def create_app(db_URI="", test_config=None):
                 'total_questions': len(questions)
             })
         except:
+            # If anything happened it raises an error
             abort(422)
 
 
@@ -157,14 +178,17 @@ def create_app(db_URI="", test_config=None):
     def add_question():
         body = request.get_json()
 
+        # Gets the nessecary items from the request
         search = body.get('searchTerm')
-
         question = body.get('question')
         answer = body.get('answer')
         difficulty = body.get('difficulty')
         category = body.get('category')
         
+        # Makes sure to handle the POST request proparly
         if search:
+            # If the POST request is meant as a search
+
             try:
                 questions = Question.query.order_by(Question.id).filter(
                     Question.question.ilike(f'%{search}%')
@@ -179,13 +203,16 @@ def create_app(db_URI="", test_config=None):
             except:
                abort(422) 
         else:
+            # If the POST request is meant to create a new question
+
             # To make sure all the fields are provided in the API request
             if question is None or answer is None or difficulty is None or category is None:
                 abort(400)
 
-            # To make sure all the fields are filled on the frontend
+            # To make sure all the fields are filled on the frontend by the user
             if question == "" or answer == "":
                 abort(400)
+
             try:
                 new_question = Question(question=question, answer=answer, difficulty=difficulty, category=category)
                 new_question.insert()
@@ -197,6 +224,7 @@ def create_app(db_URI="", test_config=None):
                 })
 
             except:
+                # If anything happened it raises an error
                 abort(422)
 
     '''
@@ -223,6 +251,8 @@ def create_app(db_URI="", test_config=None):
     @app.route('/categories/<category_id>/questions')
     def get_questions_by_category(category_id):
         questions = Question.query.order_by(Question.id).filter_by(category=category_id).all()
+
+        # If no questions found with the provided category
         if len(questions) == 0:
             abort(404)
 
@@ -249,33 +279,36 @@ def create_app(db_URI="", test_config=None):
     '''
     @app.route('/quizzes', methods=['POST'])
     def quizzes_play():
-        body = request.get_json()
-        
-        quiz_category = body.get('quiz_category')
-        previous_questions = body.get('previous_questions')
+        try:
+            body = request.get_json()
+            
+            # Gets the nessecary items from the request
+            quiz_category = body.get('quiz_category')
+            previous_questions = body.get('previous_questions')
 
-        print("quiz_category ==>", quiz_category)
-        print("previous_questions ==>", previous_questions)
+            # Makes a list of the questions in the provided category
+            questions = Question.query.filter_by(category=quiz_category['id']).all()
+            # Keeps only the questions that are not shown before
+            questions_list = [question.format() for question in questions if int(question.format()['id']) not in previous_questions]
 
-        questions = Question.query.filter_by(category=quiz_category['id']).all()
-        questions_list = [question.format() for question in questions if int(question.format()['id']) not in previous_questions]
+            # If the last question(available) was shown returns with no question
+            # so the frontend deals with it and shows the final score
+            if len(questions_list) == 0:
+                return jsonify({
+                    'success': True,
+                    'previous_questions': previous_questions
+                })
+            # When this is not the last question
+            else:
+                random_question = random.choice(questions_list)
 
-        if len(questions_list) == 0:
-            return jsonify({
-                'success': True,
-                'previous_questions': previous_questions
-            })
-
-        else:
-            random_question = random.choice(questions_list)
-            print("random_question ==>", random_question)
-            print("random_question ==>", random_question['id'])
-
-            return jsonify({
-                'success': True,
-                'random_question': random_question,
-                'previous_questions': previous_questions
-            })
+                return jsonify({
+                    'success': True,
+                    'random_question': random_question,
+                    'previous_questions': previous_questions
+                })
+        except:
+            abort(422)
 
     '''
     @TODO: 
@@ -328,5 +361,3 @@ def create_app(db_URI="", test_config=None):
             }), 500)
 
     return app
-
-    
