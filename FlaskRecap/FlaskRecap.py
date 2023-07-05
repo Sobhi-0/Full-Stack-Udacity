@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, abort
+from flask import Flask, abort, jsonify, request
 
 app = Flask(__name__)
 
