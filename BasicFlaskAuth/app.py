@@ -1,15 +1,15 @@
-from flask import Flask, request, abort
 import json
 from functools import wraps
-from jose import jwt
 from urllib.request import urlopen
 
+from flask import Flask, abort, request
+from jose import jwt
 
 app = Flask(__name__)
 
-AUTH0_DOMAIN = @TODO_REPLACE_WITH_YOUR_DOMAIN
+AUTH0_DOMAIN = r'dev-pkng5k406rprypmb.eu.auth0.com'
 ALGORITHMS = ['RS256']
-API_AUDIENCE = @TODO_REPLACE_WITH_YOUR_API_AUDIENCE
+API_AUDIENCE = 'image'
 
 
 class AuthError(Exception):
