@@ -109,7 +109,61 @@ TODO implement verify_decode_jwt(token) method
 
 
 def verify_decode_jwt(token):
-    raise Exception('Not Implemented')
+    jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
+    jwks = json.loads(jsonurl.read())
+    unverified_header = jwt.get_unverified_header(token)
+
+    try:
+        if 'kid' not in unverified_header:
+            raise AuthError('Authorization malformed.', 401)
+    except:
+        abort(401)
+
+    rsa_key = {}
+    for key in jwks['keys']:
+        if key['kid'] == unverified_header['kid']:
+            rsa_key = {
+                'kty': key['kty'],
+                'kid': key['kid'],
+                'use': key['use'],
+                'n': key['n'],
+                'e': key['e']
+            }
+    if rsa_key:
+        try:
+            payload = jwt.decode(
+                token,
+                rsa_key,
+                algorithms=ALGORITHMS,
+                audience=API_AUDIENCE,
+                issuer='https://' + AUTH0_DOMAIN + '/'
+            )
+
+            return payload
+
+        except jwt.ExpiredSignatureError:
+            try:
+                raise AuthError('Token expired.', 401)
+            except:
+                abort(401)
+
+        except jwt.JWTClaimsError:
+            try:
+                raise AuthError(
+                    'Incorrect claims. Please, check the audience and issuer.', 401)
+            except:
+                abort(401)
+
+        except Exception:
+            try:
+                raise AuthError('Unable to parse authentication token.', 400)
+            except:
+                abort(401)
+
+    try:
+        raise AuthError('Unable to find the appropriate key.', 400)
+    except:
+        abort(401)
 
 
 '''
