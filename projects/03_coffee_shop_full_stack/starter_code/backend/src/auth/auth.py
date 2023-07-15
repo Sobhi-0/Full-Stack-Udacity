@@ -109,16 +109,20 @@ TODO implement verify_decode_jwt(token) method
 
 
 def verify_decode_jwt(token):
+    # this is to compare with the provided token to make sure it is valid
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
     unverified_header = jwt.get_unverified_header(token)
 
+    # if there is no key id then it is an invalid header
     try:
         if 'kid' not in unverified_header:
             raise AuthError('Authorization malformed.', 401)
     except:
         abort(401)
 
+    # does the compare to check that the key id matches the one provided
+    # then it adds(key type, key id, usage
     rsa_key = {}
     for key in jwks['keys']:
         if key['kid'] == unverified_header['kid']:
@@ -129,6 +133,7 @@ def verify_decode_jwt(token):
                 'n': key['n'],
                 'e': key['e']
             }
+
     if rsa_key:
         try:
             payload = jwt.decode(
