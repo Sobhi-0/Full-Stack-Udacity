@@ -1,9 +1,9 @@
 import json
-from flask import request, _request_ctx_stack
 from functools import wraps
-from jose import jwt
 from urllib.request import urlopen
 
+from flask import _request_ctx_stack, request
+from jose import jwt
 
 AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
 ALGORITHMS = ['RS256']
