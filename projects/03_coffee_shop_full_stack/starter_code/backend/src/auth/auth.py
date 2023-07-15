@@ -77,7 +77,21 @@ TODO implement check_permissions(permission, payload) method
 
 
 def check_permissions(permission, payload):
-    raise Exception('Not Implemented')
+    # try/except block to use the flask abort function so the tests in Postman passes
+    try:
+        if 'permissions' not in payload:
+            raise AuthError('Permissions not included in JWT.', 400)
+    except:
+        abort(400)
+
+    try:
+        if permission not in payload['permissions']:
+            raise AuthError('Permission not found.', 403)
+    except:
+        abort(403)
+
+    return True
+
 
 '''
 TODO implement verify_decode_jwt(token) method
