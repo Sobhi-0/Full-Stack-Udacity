@@ -44,21 +44,25 @@ def get_token_auth_header():
     try:
         # if there is no header
         if not auth:
+            print('ERROR ==> Authorization header is expected')
             raise AuthError('Authorization header is expected.', 401)
 
         # to check for the bearer and the token seperatly
         parts = auth.split()
         if parts[0].lower() != 'bearer':
+            print('ERROR ==> Authorization header must start with "Bearer"')
             raise AuthError(
                 'Authorization header must start with "Bearer".', 401)
 
         # if the lenght of the splited header is not 2 and
         # it passed the previous check then it doesn't have a token
         elif len(parts) == 1:
+            print('ERROR ==> Token not found')
             raise AuthError('Token not found.', 401)
 
         # checks for the format of the header
         elif len(parts) > 2:
+            print('ERROR ==> Authorization header must be Bearer<Token>.')
             raise AuthError('Authorization header must be Bearer<Token>.', 401)
     except:
         abort(401)
@@ -84,12 +88,14 @@ def check_permissions(permission, payload):
     # try/except block to use the flask abort function so the tests in Postman passes
     try:
         if 'permissions' not in payload:
+            print('ERROR ==> Permissions not included in JWT')
             raise AuthError('Permissions not included in JWT.', 400)
     except:
         abort(400)
 
     try:
         if permission not in payload['permissions']:
+            print('ERROR ==> Permission not found')
             raise AuthError('Permission not found.', 403)
     except:
         abort(403)
@@ -121,6 +127,7 @@ def verify_decode_jwt(token):
     # if there is no key id then it is an invalid header
     try:
         if 'kid' not in unverified_header:
+            print('ERROR ==> Authorization malformed')
             raise AuthError('Authorization malformed.', 401)
     except:
         abort(401)
@@ -153,12 +160,15 @@ def verify_decode_jwt(token):
 
         except jwt.ExpiredSignatureError:
             try:
+                print('ERROR ==> Token expired')
                 raise AuthError('Token expired.', 401)
             except:
                 abort(401)
 
         except jwt.JWTClaimsError:
             try:
+                print(
+                    'ERROR ==> Incorrect claims. Please, check the audience and issuer')
                 raise AuthError(
                     'Incorrect claims. Please, check the audience and issuer.', 401)
             except:
@@ -166,11 +176,13 @@ def verify_decode_jwt(token):
 
         except Exception:
             try:
+                print('ERROR ==> Unable to parse authentication token')
                 raise AuthError('Unable to parse authentication token.', 400)
             except:
                 abort(401)
 
     try:
+        print('ERROR ==> Unable to find the appropriate key')
         raise AuthError('Unable to find the appropriate key.', 400)
     except:
         abort(401)

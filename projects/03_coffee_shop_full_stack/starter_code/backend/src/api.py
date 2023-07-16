@@ -18,7 +18,8 @@ TODO uncomment the following line to initialize the datbase
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this function will add one
 '''
-# db_drop_and_create_all()
+# with app.app_context():
+#     db_drop_and_create_all()
 
 # ROUTES
 '''
@@ -31,6 +32,17 @@ TODO implement endpoint
 '''
 
 
+@app.route('/drinks')
+def get_drinks():
+    drinks = Drink.query.all()
+    drinks_list = [drink.short() for drink in drinks]
+
+    return jsonify({
+        "success": True,
+        "drinks": drinks_list
+    })
+
+
 '''
 TODO implement endpoint
     GET /drinks-detail
@@ -39,6 +51,21 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+
+
+@app.route('/drinks-detail')
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(jwt):
+    # the function needs to have a positional argumnet
+    # because the requires_auth decorater returns the payload
+    drinks = Drink.query.all()
+    drinks_list = [drink.long() for drink in drinks]
+    # print("JWT ==>", jwt)
+
+    return jsonify({
+        "success": True,
+        "drinks": drinks_list
+    })
 
 
 '''
