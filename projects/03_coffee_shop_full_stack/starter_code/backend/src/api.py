@@ -18,6 +18,7 @@ TODO uncomment the following line to initialize the datbase
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this function will add one
 '''
+
 # with app.app_context():
 #     db_drop_and_create_all()
 
@@ -35,6 +36,7 @@ TODO implement endpoint
 @app.route('/drinks')
 def get_drinks():
     drinks = Drink.query.all()
+    print("DRINKS ==>", drinks)
     drinks_list = [drink.short() for drink in drinks]
 
     return jsonify({
@@ -77,6 +79,44 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+
+
+# BRUH PLS FIX THIS STUPID ERROR WHAT IN THE WORLD DOES THE DATABASE WANT AGGHHHHHHHH!!!!!!!
+# if you add anything now it will break the database so don't :/
+# id you did :| remove the comment on line 22
+
+@app.route('/drinks', methods=['POST'])
+@requires_auth('get:drinks')
+def add_drinks(jwt):
+    body = request.get_json()
+
+    # gets the nessecary items from the request
+    title = body.get('title')
+    recipe = body.get('recipe')
+
+    # print("RECIPE ==>", recipe)
+
+    layers = [i['name'].lower() for i in recipe]
+    layers_set = set(layers)
+
+    # check all the existing drinks to make sure the new drink doesn't already exist
+    if len(layers) != len(layers_set):
+        print("ERROR ==> Can't have duplicate layer names")
+        abort(409)
+
+    print("RECIPE ==>", str(recipe))
+
+    new_drink = Drink(title=str(title), recipe=str(recipe))
+    new_drink.insert()
+
+    # print("HERE ==>", new_drink.long())
+    # print("HERE ==>", str(new_drink.long()))
+
+    return jsonify({
+        "success": True,
+        "drinks": new_drink.long()
+    })
 
 
 '''

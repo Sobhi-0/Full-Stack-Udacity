@@ -51,8 +51,7 @@ def get_token_auth_header():
         parts = auth.split()
         if parts[0].lower() != 'bearer':
             print('ERROR ==> Authorization header must start with "Bearer"')
-            raise AuthError(
-                'Authorization header must start with "Bearer".', 401)
+            raise AuthError('Authorization header must start with "Bearer".', 401)
 
         # if the lenght of the splited header is not 2 and
         # it passed the previous check then it doesn't have a token
@@ -167,10 +166,8 @@ def verify_decode_jwt(token):
 
         except jwt.JWTClaimsError:
             try:
-                print(
-                    'ERROR ==> Incorrect claims. Please, check the audience and issuer')
-                raise AuthError(
-                    'Incorrect claims. Please, check the audience and issuer.', 401)
+                print('ERROR ==> Incorrect claims. Please, check the audience and issuer')
+                raise AuthError('Incorrect claims. Please, check the audience and issuer.', 401)
             except:
                 abort(401)
 
