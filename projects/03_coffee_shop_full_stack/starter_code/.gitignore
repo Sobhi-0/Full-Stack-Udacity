@@ -4,6 +4,7 @@ __pycache__/
 test.db
 JWT
 .env
+flask-setup
 
 # OS generated files #
 ######################

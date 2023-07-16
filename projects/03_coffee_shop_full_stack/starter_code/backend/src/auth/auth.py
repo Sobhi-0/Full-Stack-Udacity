@@ -4,10 +4,14 @@ from urllib.request import urlopen
 
 from flask import _request_ctx_stack, request, abort
 from jose import jwt
+from dotenv import load_dotenv
+import os
 
-AUTH0_DOMAIN = 'dev-pkng5k406rprypmb.eu.auth0.com'
-ALGORITHMS = ['RS256']
-API_AUDIENCE = 'coffee'
+load_dotenv()
+
+AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN')
+ALGORITHMS = os.environ.get('ALGORITHMS')
+API_AUDIENCE = os.environ.get('API_AUDIENCE')
 
 # AuthError Exception
 '''
@@ -122,7 +126,7 @@ def verify_decode_jwt(token):
         abort(401)
 
     # does the compare to check that the key id matches the one provided
-    # then it adds(key type, key id, usage
+    # then it adds the values of the key(key type, key id, usage)
     rsa_key = {}
     for key in jwks['keys']:
         if key['kid'] == unverified_header['kid']:
@@ -134,6 +138,7 @@ def verify_decode_jwt(token):
                 'e': key['e']
             }
 
+    # if rsa_key was not found it raises AuthError
     if rsa_key:
         try:
             payload = jwt.decode(
@@ -190,7 +195,7 @@ def requires_auth(permission=''):
             token = get_token_auth_header()
             payload = verify_decode_jwt(token)
             check_permissions(permission, payload)
-            return f(payload, *args, **kwargs)
 
+            return f(payload, *args, **kwargs)
         return wrapper
     return requires_auth_decorator
