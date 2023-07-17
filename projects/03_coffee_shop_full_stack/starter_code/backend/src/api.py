@@ -36,6 +36,12 @@ TODO implement endpoint
 @app.route('/drinks')
 def get_drinks():
     drinks = Drink.query.all()
+
+    # if no drinks found then raises 404 error
+    if len(drinks) == 0:
+        print("ERROR ==> No drinks were found!")
+        abort(404)
+
     drinks_list = [drink.short() for drink in drinks]
 
     return jsonify({
@@ -60,6 +66,12 @@ def get_drinks_detail(jwt):
     # the function needs to have a positional argumnet
     # because the requires_auth decorater returns the payload
     drinks = Drink.query.all()
+
+    # if no drinks found then raises 404 error
+    if len(drinks) == 0:
+        print("ERROR ==> No drinks were found!")
+        abort(404)
+
     drinks_list = [drink.long() for drink in drinks]
     # print("JWT ==>", jwt)
 
@@ -85,9 +97,16 @@ TODO implement endpoint
 def add_drinks(jwt):
     body = request.get_json()
 
-    # gets the nessecary items from the request
-    title = body.get('title')
-    recipe = body.get('recipe')
+    try:
+        # gets the nessecary items from the request
+        title = body.get('title')
+        recipe = body.get('recipe')
+        # if title or recipe not provided raises value error
+        if title is None or recipe is None:
+            raise ValueError
+    except:
+        print("ERROR ==> Must provide title and recipe to add a new drink")
+        abort(400)
 
     # makes sure that the new drink doesn't already exist
     drinks = Drink.query.all()
@@ -96,9 +115,12 @@ def add_drinks(jwt):
             print("ERROR ==> Can't have duplicate layer names")
             abort(409)
 
-    # actually adding to the database
-    new_drink = Drink(title=str(title), recipe=json.dumps(recipe))
-    new_drink.insert()
+    try:
+        # actually adding to the database
+        new_drink = Drink(title=str(title), recipe=json.dumps(recipe))
+        new_drink.insert()
+    except:
+        abort(500)
 
     # adding the drink to a list to make sure the return is in the correct json format
     new_drink_list = [new_drink.long()]
