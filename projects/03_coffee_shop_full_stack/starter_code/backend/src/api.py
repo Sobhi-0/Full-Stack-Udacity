@@ -18,6 +18,7 @@ TODO uncomment the following line to initialize the datbase
 !! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
 !! Running this function will add one
 '''
+
 # with app.app_context():
 #     db_drop_and_create_all()
 
@@ -77,6 +78,35 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def add_drinks(jwt):
+    body = request.get_json()
+
+    # gets the nessecary items from the request
+    title = body.get('title')
+    recipe = body.get('recipe')
+
+    # makes sure that the new drink doesn't already exist
+    drinks = Drink.query.all()
+    for drink in drinks:
+        if drink.title == title:
+            print("ERROR ==> Can't have duplicate layer names")
+            abort(409)
+
+    # actually adding to the database
+    new_drink = Drink(title=str(title), recipe=json.dumps(recipe))
+    new_drink.insert()
+
+    # adding the drink to a list to make sure the return is in the correct json format
+    new_drink_list = [new_drink.long()]
+
+    return jsonify({
+        "success": True,
+        "drinks": new_drink_list
+    })
 
 
 '''
