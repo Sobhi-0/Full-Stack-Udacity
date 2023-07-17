@@ -176,13 +176,13 @@ def verify_decode_jwt(token):
                 print('ERROR ==> Unable to parse authentication token')
                 raise AuthError('Unable to parse authentication token.', 400)
             except:
-                abort(401)
+                abort(400)
 
     try:
         print('ERROR ==> Unable to find the appropriate key')
-        raise AuthError('Unable to find the appropriate key.', 400)
+        raise AuthError('Unable to find the appropriate key.', 403)
     except:
-        abort(401)
+        abort(403)
 
 
 '''

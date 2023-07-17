@@ -65,9 +65,14 @@ class Drink(db.Model):
     '''
 
     def short(self):
-        print(json.loads(self.recipe))
+        # print("self.recipe ===>>", self.recipe)
+        # print("FINISHED")
+        # print("json.loads ===>>", json.loads(self.recipe))
+        print("SHORT FUNCTION")
+        print("CHECK THIS", json.loads(self.recipe))
         short_recipe = [{'color': r['color'], 'parts': r['parts']}
                         for r in json.loads(self.recipe)]
+        print("SHORT FUNCTION 2")
         return {
             'id': self.id,
             'title': self.title,
