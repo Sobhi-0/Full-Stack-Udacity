@@ -42,7 +42,7 @@ def get_token_auth_header():
     auth = request.headers.get('Authorization', None)
     # try/except block to use the flask abort function so the tests in Postman passes (this is before I implemented the error handlers)
     # try:
-        # if there is no header
+    # if there is no header
     if not auth:
         print('ERROR ==> Authorization header is expected')
         raise AuthError('Authorization header is expected.', 401)
@@ -153,7 +153,8 @@ def verify_decode_jwt(token):
 
         except jwt.JWTClaimsError:
             print('ERROR ==> Incorrect claims. Please, check the audience and issuer')
-            raise AuthError('Incorrect claims. Please, check the audience and issuer.', 401)
+            raise AuthError(
+                'Incorrect claims. Please, check the audience and issuer.', 401)
 
         except Exception:
             print('ERROR ==> Unable to parse authentication token')
