@@ -144,6 +144,39 @@ TODO implement endpoint
 '''
 
 
+@app.route('/drinks/<id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def edit_drink(jwt, id):
+    drink = Drink.query.get(id)
+
+    # if the id doesn't exist it raises not found error
+    if drink is None:
+        abort(404)
+
+    # gets the nessecary items from the request
+    body = request.get_json()
+    title = body.get('title')
+    recipe = body.get('recipe')
+
+    # if an error occured it raises internal server error
+    try:
+        if title is not None:
+            drink.title = title
+        if recipe is not None:
+            drink.recipe = json.dumps(recipe)
+
+        drink.update()
+    except:
+        abort(500)
+
+    updated_drink_list = [drink.long()]
+
+    return jsonify({
+        "success": True,
+        "drinks": updated_drink_list
+    })
+
+
 '''
 TODO implement endpoint
     DELETE /drinks/<id>
@@ -154,6 +187,8 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route('/drinks/<id>', methods=['DELETE'])
 @requires_auth('delete:drinks')
 def delete_drinks(jwt, id):
@@ -169,13 +204,11 @@ def delete_drinks(jwt, id):
     drink = Drink.query.get(id)
     if drink is not None:
         abort(500)
-    
 
     return jsonify({
         "success": True,
         "delete": id
     })
-
 
 
 # Error Handling
