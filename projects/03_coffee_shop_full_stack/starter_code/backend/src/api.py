@@ -154,6 +154,28 @@ TODO implement endpoint
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@app.route('/drinks/<id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drinks(jwt, id):
+    drink = Drink.query.get(id)
+
+    # if the id doesn't exist it raises not found error
+    if drink is None:
+        abort(404)
+
+    drink.delete()
+
+    # checks if the drink was actually deleted from the database
+    drink = Drink.query.get(id)
+    if drink is not None:
+        abort(500)
+    
+
+    return jsonify({
+        "success": True,
+        "delete": id
+    })
+
 
 
 # Error Handling
