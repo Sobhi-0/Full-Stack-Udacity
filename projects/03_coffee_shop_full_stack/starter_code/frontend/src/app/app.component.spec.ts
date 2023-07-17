@@ -43,5 +43,9 @@ describe('AppComponent', () => {
   });
 
   // TODO: add more tests!
-
+  it('should have the correct title', () => {
+    const fixture = TestBed.createComponent(AppComponent);
+    const app = fixture.debugElement.componentInstance;
+    expect(app.title).toEqual('Ionic App');
+  });
 });
